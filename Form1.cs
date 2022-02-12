@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
 namespace ConverterTerritorioEmGeometriaMySql
 {
@@ -26,12 +28,26 @@ namespace ConverterTerritorioEmGeometriaMySql
         // Obter o reverso em polígonos
         // https://nominatim.openstreetmap.org/reverse?format=json&osm_id=1582777&osm_type=R&polygon_geojson=1
 
+
+
         private async void btnObterTerritorio_Click(object sender, EventArgs e)
         {
+            btnObterTerritorio.Enabled = false;
+
             using HttpClient client = new ();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
             
-            var json = await client.GetStringAsync(string.Format(_apiReversoPoligonosTerritorio, 334547));
+            var stream = await client.GetStreamAsync(string.Format(_apiReversoPoligonosTerritorio, 334547));
+
+            /*string text;
+            using (StreamReader reader = new(stream, Encoding.UTF8))
+            {
+                text = reader.ReadToEnd();
+            }*/
+
+            var lista = await JsonSerializer.DeserializeAsync<RelacaoReverso>(stream);
+
+            btnObterTerritorio.Enabled = true;
         }
     }
 }
