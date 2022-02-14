@@ -61,9 +61,9 @@ namespace ConverterTerritorioEmGeometriaMySql
 
                 if (i == 0) first = coord;
                 
-                sb.Append($"{coord[0].ToString(enUS)} {coord[1].ToString(enUS)},");
+                sb.Append($"{coord[1].ToString(enUS)} {coord[0].ToString(enUS)},");
             }
-            sb.Append($"{first[0].ToString(enUS)} {first[1].ToString(enUS)}))");
+            sb.Append($"{first[1].ToString(enUS)} {first[0].ToString(enUS)}))");
 
             string final = sb.ToString();
 
