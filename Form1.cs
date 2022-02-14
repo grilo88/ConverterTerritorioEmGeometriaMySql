@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -45,7 +46,26 @@ namespace ConverterTerritorioEmGeometriaMySql
                 text = reader.ReadToEnd();
             }*/
 
+            StringBuilder sb = new();
+
             var lista = await JsonSerializer.DeserializeAsync<RelacaoReverso>(stream);
+
+            sb.Append("Polygon((");
+            List<double> first = new();
+            var enUS = new CultureInfo("en-US");
+
+            for (int i = 0; i < lista.geojson.coordinates[0].Count; i++)
+            {
+                var coord = lista.geojson.coordinates[0][i];
+                var par = i % 2 == 0;
+
+                if (i == 0) first = coord;
+                
+                sb.Append($"{coord[0].ToString(enUS)} {coord[1].ToString(enUS)},");
+            }
+            sb.Append($"{first[0].ToString(enUS)} {first[1].ToString(enUS)}))");
+
+            string final = sb.ToString();
 
             btnObterTerritorio.Enabled = true;
         }
