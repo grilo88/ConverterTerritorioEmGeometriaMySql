@@ -16,6 +16,36 @@ namespace ConverterTerritorioEmGeometriaMySql
             InitializeComponent();
         }
         const string datasintese = "https://api.datasintese.com/";
+        readonly Dictionary<string, string> Estado = new()
+        {
+            { "AC", "ACRE" },
+            { "AL", "ALAGOAS" },
+            { "AP", "AMAPA" },
+            { "AM", "AMAZONAS" },
+            { "BA", "BAHIA" },
+            { "CE", "CEARÁ" },
+            { "ES", "ESPÍRITO SANTO" },
+            { "GO", "GOIÁS" },
+            { "MA", "MARANHÃO" },
+            { "MT", "MATO GROSSO" },
+            { "MS", "MATO GROSSO DO SUL" },
+            { "MG", "MINAS GERAIS" },
+            { "PA", "PARÁ" },
+            { "PB", "PARAÍBA" },
+            { "PR", "PARANÁ" },
+            { "PE", "PERNAMBUCO" },
+            { "PI", "PIAUÍ" },
+            { "RJ", "RIO DE JANEIRO" },
+            { "RN", "RIO GRANDE DO NORTE" },
+            { "RS", "RIO GRANDE DO SUL" },
+            { "RO", "RONDÔNIA" },
+            { "RR", "RORAIMA" },
+            { "SC", "SANTA CATARINA" },
+            { "SP", "SÃO PAULO" },
+            { "SE", "SERGIPE" },
+            { "TO", "TOCANTINS" },
+            { "DF", "DISTRITO FEDERAL" },
+        };
 
 
         // Exemplo usando o site open street map
@@ -84,7 +114,7 @@ namespace ConverterTerritorioEmGeometriaMySql
 
             using HttpClient client = new();
             client.DefaultRequestHeaders.Add("X_Auth_Cpf", "02857455143");
-            client.DefaultRequestHeaders.Add("X_Auth_Token", "88dc8ad60803dbf5060d6d621d8537f3");
+            client.DefaultRequestHeaders.Add("X_Auth_Token", "e7237b1941c2dc2d2fa1366ef35f10fa");
 
             var stream = await client.GetStreamAsync(endpoint);
             var lista = await JsonSerializer.DeserializeAsync<List<Parametro>>(stream);
@@ -144,7 +174,12 @@ namespace ConverterTerritorioEmGeometriaMySql
             {
                 listView1.Items[0].Selected = true;
 
-                var relation = listView1.Items.Cast<ListViewItem>().Where(x => x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text == "relation").Any()).Select(x => x.SubItems.Cast<ListViewSubItem>()).ToList();
+                var relation = listView1.Items.Cast<ListViewItem>().Where(x => 
+                    x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text == "relation").Any() &&                    // Tipo Relação
+                    x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text.ToUpper().Contains(txtEstado.Text + ",")   // Aumenta precisão usando o nome do Estado
+                    ).Any()
+                    ).Select(x => x.SubItems.Cast<ListViewSubItem>()).ToList();
+
                 osm_id = relation.First().Skip(1).First().Text;
             }
             else
@@ -159,6 +194,9 @@ namespace ConverterTerritorioEmGeometriaMySql
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            txtUF.Text = listBox1.Text[..2];
+            txtEstado.Text = Estado[txtUF.Text];
+
             if (chkAutoCarregarRelacoes.Checked)
             {
                 btnObterRelacoes_Click(sender, e);

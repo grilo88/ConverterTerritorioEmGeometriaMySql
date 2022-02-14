@@ -49,6 +49,10 @@
             this.btnAbrirMapa = new System.Windows.Forms.Button();
             this.txtOsmId = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtUF = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtEstado = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnObterGeometria
@@ -199,7 +203,7 @@
             this.txtOsmId.Location = new System.Drawing.Point(700, 408);
             this.txtOsmId.Name = "txtOsmId";
             this.txtOsmId.ReadOnly = true;
-            this.txtOsmId.Size = new System.Drawing.Size(150, 23);
+            this.txtOsmId.Size = new System.Drawing.Size(113, 23);
             this.txtOsmId.TabIndex = 9;
             this.txtOsmId.Text = "0";
             this.txtOsmId.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -213,11 +217,51 @@
             this.label1.TabIndex = 10;
             this.label1.Text = "OSM_ID:";
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(867, 411);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(24, 15);
+            this.label2.TabIndex = 12;
+            this.label2.Text = "UF:";
+            // 
+            // txtUF
+            // 
+            this.txtUF.Location = new System.Drawing.Point(897, 408);
+            this.txtUF.Name = "txtUF";
+            this.txtUF.ReadOnly = true;
+            this.txtUF.Size = new System.Drawing.Size(53, 23);
+            this.txtUF.TabIndex = 11;
+            this.txtUF.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(960, 411);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(45, 15);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "Estado:";
+            // 
+            // txtEstado
+            // 
+            this.txtEstado.Location = new System.Drawing.Point(1011, 408);
+            this.txtEstado.Name = "txtEstado";
+            this.txtEstado.ReadOnly = true;
+            this.txtEstado.Size = new System.Drawing.Size(125, 23);
+            this.txtEstado.TabIndex = 13;
+            this.txtEstado.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1245, 606);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.txtEstado);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtUF);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtOsmId);
             this.Controls.Add(this.btnAbrirMapa);
@@ -258,5 +302,9 @@
         private Button btnAbrirMapa;
         private TextBox txtOsmId;
         private Label label1;
+        private Label label2;
+        private TextBox txtUF;
+        private Label label3;
+        private TextBox txtEstado;
     }
 }
