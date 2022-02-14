@@ -1,8 +1,11 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Xml;
+using static System.Windows.Forms.ListViewItem;
 
 namespace ConverterTerritorioEmGeometriaMySql
 {
@@ -12,6 +15,9 @@ namespace ConverterTerritorioEmGeometriaMySql
         {
             InitializeComponent();
         }
+        const string datasintese = "https://api.datasintese.com/";
+
+
         // Exemplo usando o site open street map
         // https://www.openstreetmap.org/relation/334547
 
@@ -29,16 +35,14 @@ namespace ConverterTerritorioEmGeometriaMySql
         // Obter o reverso em polígonos
         // https://nominatim.openstreetmap.org/reverse?format=json&osm_id=1582777&osm_type=R&polygon_geojson=1
 
-
-
         private async void btnObterTerritorio_Click(object sender, EventArgs e)
         {
-            btnObterTerritorio.Enabled = false;
+            btnObterGeometria.Enabled = false;
 
-            using HttpClient client = new ();
+            using HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
-            
-            var stream = await client.GetStreamAsync(string.Format(_apiReversoPoligonosTerritorio, 334547));
+
+            var stream = await client.GetStreamAsync(string.Format(_apiReversoPoligonosTerritorio, txtOsmId.Text));
 
             /*string text;
             using (StreamReader reader = new(stream, Encoding.UTF8))
@@ -60,14 +64,129 @@ namespace ConverterTerritorioEmGeometriaMySql
                 var par = i % 2 == 0;
 
                 if (i == 0) first = coord;
-                
+
                 sb.Append($"{coord[1].ToString(enUS)} {coord[0].ToString(enUS)},");
             }
             sb.Append($"{first[1].ToString(enUS)} {first[0].ToString(enUS)}))");
 
             string final = sb.ToString();
 
-            btnObterTerritorio.Enabled = true;
+            textBox2.Text = final;
+
+            btnObterGeometria.Enabled = true;
+        }
+
+        private async void btnCarregarMunicipios_Click(object sender, EventArgs e)
+        {
+            btnCarregarMunicipios.Enabled = false;
+
+            string endpoint = $"{datasintese}/v2/datatarget/parametros?tipo=pessoasjuridicas&descricao=municipio";
+
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Add("X_Auth_Cpf", "02857455143");
+            client.DefaultRequestHeaders.Add("X_Auth_Token", "88dc8ad60803dbf5060d6d621d8537f3");
+
+            var stream = await client.GetStreamAsync(endpoint);
+            var lista = await JsonSerializer.DeserializeAsync<List<Parametro>>(stream);
+
+
+            listBox1.BeginUpdate();
+            listBox1.DataSource = lista[0].valores;
+            listBox1.EndUpdate();
+
+            //for (int i = 0; i < lista[0].valores.Count; i++)
+            //{
+            //    var valor = lista[0].valores[i];
+
+            //    var uf = valor[..2];
+            //    var municipio = valor[3..];
+
+
+            //}
+            btnCarregarMunicipios.Enabled = true;
+        }
+
+        private async void btnObterRelacoes_Click(object sender, EventArgs e)
+        {
+            btnObterRelacoes.Enabled = false;
+
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
+
+            var stream = await client.GetStreamAsync(string.Format(_apiReversoRelacaoTerritorio, listBox1.Text[3..]));
+            var lista = await JsonSerializer.DeserializeAsync<List<RelacaoTerritorio>>(stream);
+
+            listView1.BeginUpdate();
+            listView1.Items.Clear();
+
+            for (int i = 0; i < lista.Count; i++)
+            {
+                var item = new ListViewItem();
+                item.Text = $"{lista[i].place_id}";
+
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].osm_id}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].osm_type}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].lat}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].lon}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].display_name}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].@class}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].type}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].importance}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].icon}"));
+                item.SubItems.Add(new ListViewItem.ListViewSubItem(item, $"{lista[i].licence}"));
+
+                listView1.Items.Add(item);
+            }
+            listView1.EndUpdate();
+
+            string osm_id = "0";
+            if (listView1.SelectedItems.Count == 0)
+            {
+                listView1.Items[0].Selected = true;
+
+                var relation = listView1.Items.Cast<ListViewItem>().Where(x => x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text == "relation").Any()).Select(x => x.SubItems.Cast<ListViewSubItem>()).ToList();
+                osm_id = relation.First().Skip(1).First().Text;
+            }
+            else
+            {
+                osm_id = listView1.SelectedItems[0].SubItems[1].Text;
+            }
+
+            txtOsmId.Text = osm_id;
+
+            btnObterRelacoes.Enabled = true;
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (chkAutoCarregarRelacoes.Checked)
+            {
+                btnObterRelacoes_Click(sender, e);
+            }
+        }
+
+        private void btnAbrirMapa_Click(object sender, EventArgs e)
+        {
+            string url = "https://www.openstreetmap.org/relation/{0}";
+
+            if (listView1.Items.Count == 0)
+            {
+                return;
+            }
+
+            var proc = new Process();
+            proc.StartInfo.UseShellExecute = true;
+            proc.StartInfo.FileName = string.Format(url, txtOsmId.Text);
+            proc.Start();
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                string osm_id = listView1.SelectedItems[0].SubItems[1].Text;
+                txtOsmId.Text = osm_id;
+            }
         }
     }
 }
