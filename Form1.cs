@@ -1,3 +1,4 @@
+using MySqlConnector;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -20,7 +21,7 @@ namespace ConverterTerritorioEmGeometriaMySql
         {
             { "AC", "ACRE" },
             { "AL", "ALAGOAS" },
-            { "AP", "AMAPA" },
+            { "AP", "AMAPÁ" },
             { "AM", "AMAZONAS" },
             { "BA", "BAHIA" },
             { "CE", "CEARÁ" },
@@ -47,6 +48,9 @@ namespace ConverterTerritorioEmGeometriaMySql
             { "DF", "DISTRITO FEDERAL" },
         };
 
+        string lat = "";
+        string lon = "";
+        string geometria_robo = "";
 
         // Exemplo usando o site open street map
         // https://www.openstreetmap.org/relation/334547
@@ -54,6 +58,7 @@ namespace ConverterTerritorioEmGeometriaMySql
         const string _apiReversoPoligonosTerritorio = "https://nominatim.openstreetmap.org/reverse?format=json&osm_id={0}&osm_type=R&polygon_geojson=1";
         const string _apiReversoNomeTerritorio = "https://nominatim.openstreetmap.org/reverse?format=json&lat={0}&lon={1}&osm_id={2}&accept-language=en";
         const string _apiReversoRelacaoTerritorio = "https://nominatim.openstreetmap.org/search.php?city={0}&format=json";
+        const string _apiReversoRelacaoTerritorio2 = "https://nominatim.openstreetmap.org/search.php?q={0}&format=json";
         // https://nominatim.openstreetmap.org/reverse?format=json&osm_id=334547&osm_type=R&polygon_geojson=1
 
         // Obter o nome da cidade
@@ -62,47 +67,142 @@ namespace ConverterTerritorioEmGeometriaMySql
         // Obter a relação da cidade
         // https://nominatim.openstreetmap.org/search.php?city=%C5%81%C3%B3d%C5%BA&format=json
 
+        //https://nominatim.openstreetmap.org/search.php?city=%C5%81%C3%B3d%C5%BA&polygon_svg=1
+
+
+
         // Obter o reverso em polígonos
         // https://nominatim.openstreetmap.org/reverse?format=json&osm_id=1582777&osm_type=R&polygon_geojson=1
 
-        private async void btnObterTerritorio_Click(object sender, EventArgs e)
+        private async void btnObterGeometria_Click(object sender, EventArgs e)
         {
             btnObterGeometria.Enabled = false;
 
             using HttpClient client = new();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
 
-            var stream = await client.GetStreamAsync(string.Format(_apiReversoPoligonosTerritorio, txtOsmId.Text));
-
-            /*string text;
-            using (StreamReader reader = new(stream, Encoding.UTF8))
+            Stream stream;
+            try
             {
-                text = reader.ReadToEnd();
-            }*/
+                stream = await client.GetStreamAsync(string.Format(_apiReversoPoligonosTerritorio, txtOsmId.Text));
+            }
+            catch (Exception ex)
+            {
+                btnObterGeometria.Enabled = true;
+                return;
+            }
+            //string text;
+            //using (StreamReader reader = new(stream, Encoding.UTF8))
+            //{
+            //    text = reader.ReadToEnd();
+            //}
 
             StringBuilder sb = new();
+            var enUS = new CultureInfo("en-US");
 
             var lista = await JsonSerializer.DeserializeAsync<RelacaoReverso>(stream);
 
-            sb.Append("Polygon((");
-            List<double> first = new();
-            var enUS = new CultureInfo("en-US");
-
-            for (int i = 0; i < lista.geojson.coordinates[0].Count; i++)
+            if (lista.geojson.type == "Polygon")
             {
-                var coord = lista.geojson.coordinates[0][i];
-                var par = i % 2 == 0;
+                var coordinates = (JsonElement)lista.geojson.coordinates;
 
-                if (i == 0) first = coord;
+                foreach (var item in coordinates.EnumerateArray())
+                {
+                    sb.Append("Polygon((");
+                    List<double> first = new();
 
-                sb.Append($"{coord[1].ToString(enUS)} {coord[0].ToString(enUS)},");
+                    int a = 0;
+                    foreach (var item2 in item.EnumerateArray())
+                    {
+                        double lat = 0;
+                        double lon = 0;
+
+                        int i = 0;
+                        foreach (var item3 in item2.EnumerateArray())
+                        {
+                            var value = item3.GetDouble();
+                            switch (i)
+                            {
+                                case 0: lat = value; break;
+                                case 1: lon = value; break;
+                            }
+                            i++;
+                        }
+
+                        if (a == 0)
+                        {
+                            first.Add(lat);
+                            first.Add(lon);
+                        }
+
+                        sb.Append($"{lat.ToString(enUS)} {lon.ToString(enUS)},");
+                        a++;
+                    }
+
+                    sb.Append($"{first[0].ToString(enUS)} {first[1].ToString(enUS)}))");
+                    break;
+                }
             }
-            sb.Append($"{first[1].ToString(enUS)} {first[0].ToString(enUS)}))");
+            else if (lista.geojson.type == "MultiPolygon")
+            {
+                //90129
+
+                var coordinates = (JsonElement)lista.geojson.coordinates;
+
+                sb.Append("MultiPolygon(");
+
+                foreach (var item0 in coordinates.EnumerateArray())
+                {
+                    sb.Append("((");
+                    foreach (var item1 in item0.EnumerateArray())
+                    {
+                        List<double> first = new();
+
+                        int a = 0;
+                        foreach (var item2 in item1.EnumerateArray())
+                        {
+                            double lat = 0;
+                            double lon = 0;
+
+                            int i = 0;
+                            foreach (var item3 in item2.EnumerateArray())
+                            {
+                                var value = item3.GetDouble();
+                                switch (i)
+                                {
+                                    case 0: lat = value; break;
+                                    case 1: lon = value; break;
+                                }
+                                i++;
+                            }
+
+                            if (a == 0)
+                            {
+                                first.Add(lat);
+                                first.Add(lon);
+                            }
+
+                            sb.Append($"{lat.ToString(enUS)} {lon.ToString(enUS)},");
+                            a++;
+                        }
+                        sb = sb.Remove(sb.Length - 1, 1);
+                    }
+                    sb.Append(")),");
+                }
+
+                sb = sb.Remove(sb.Length - 1, 1);
+                sb.Append(')');
+            }
+            else
+                throw new NotImplementedException(lista.geojson.type);
 
             string final = sb.ToString();
 
-            textBox2.Text = final;
-
+            if (btnAtualizarBancoDeDados.Enabled)
+                txtGeometria.Text = final;
+            else
+                geometria_robo = final;
+                
             btnObterGeometria.Enabled = true;
         }
 
@@ -114,36 +214,40 @@ namespace ConverterTerritorioEmGeometriaMySql
 
             using HttpClient client = new();
             client.DefaultRequestHeaders.Add("X_Auth_Cpf", "02857455143");
-            client.DefaultRequestHeaders.Add("X_Auth_Token", "e7237b1941c2dc2d2fa1366ef35f10fa");
+            client.DefaultRequestHeaders.Add("X_Auth_Token", "b88575b9cfcc94888696c739a8a37d53");
 
             var stream = await client.GetStreamAsync(endpoint);
             var lista = await JsonSerializer.DeserializeAsync<List<Parametro>>(stream);
-
 
             listBox1.BeginUpdate();
             listBox1.DataSource = lista[0].valores;
             listBox1.EndUpdate();
 
-            //for (int i = 0; i < lista[0].valores.Count; i++)
-            //{
-            //    var valor = lista[0].valores[i];
-
-            //    var uf = valor[..2];
-            //    var municipio = valor[3..];
-
-
-            //}
             btnCarregarMunicipios.Enabled = true;
         }
 
         private async void btnObterRelacoes_Click(object sender, EventArgs e)
         {
             btnObterRelacoes.Enabled = false;
+            geometria_robo = "";
 
+            int tipoSearch = 1;
             using HttpClient client = new();
+
+        Repetir:
+            
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
 
-            var stream = await client.GetStreamAsync(string.Format(_apiReversoRelacaoTerritorio, listBox1.Text[3..]));
+            Stream stream;
+            if (tipoSearch == 1)
+            {
+                stream = await client.GetStreamAsync(string.Format(_apiReversoRelacaoTerritorio, listBox1.Text[3..]));
+            }
+            else
+            {
+                stream = await client.GetStreamAsync(string.Format(_apiReversoRelacaoTerritorio2, $"{listBox1.Text[3..]} {txtEstado.Text}" ));
+            }
+
             var lista = await JsonSerializer.DeserializeAsync<List<RelacaoTerritorio>>(stream);
 
             listView1.BeginUpdate();
@@ -172,7 +276,7 @@ namespace ConverterTerritorioEmGeometriaMySql
             string osm_id = "0";
             if (listView1.SelectedItems.Count == 0)
             {
-                listView1.Items[0].Selected = true;
+                if (listView1.Items.Count > 0) listView1.Items[0].Selected = true;
 
                 var relation = listView1.Items.Cast<ListViewItem>().Where(x => 
                     x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text == "relation").Any() &&                    // Tipo Relação
@@ -180,7 +284,35 @@ namespace ConverterTerritorioEmGeometriaMySql
                     ).Any()
                     ).Select(x => x.SubItems.Cast<ListViewSubItem>()).ToList();
 
-                osm_id = relation.First().Skip(1).First().Text;
+                if (relation.Any())
+                {
+                    osm_id = relation.First().Skip(1).First().Text;
+                    lat = relation.First().Skip(3).First().Text;
+                    lon = relation.First().Skip(4).First().Text;
+                }
+                else
+                {
+                    if (tipoSearch == 1)
+                    {
+                        tipoSearch = 2;
+                        goto Repetir;
+                    }
+                    else if (tipoSearch == 2 && relation.Count == 0)
+                    {
+                        var ponto = listView1.Items.Cast<ListViewItem>().Where(x =>
+                            x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text == "node").Any() &&                        // Tipo Relação
+                            x.SubItems.Cast<ListViewSubItem>().Where(y => y.Text.ToUpper().Contains(txtEstado.Text + ",")   // Aumenta precisão usando o nome do Estado
+                            ).Any()
+                            ).Select(x => x.SubItems.Cast<ListViewSubItem>()).ToList();
+
+                        if (ponto.Any())
+                        {
+                            lat = ponto.First().Skip(3).First().Text;
+                            lon = ponto.First().Skip(4).First().Text;
+                            geometria_robo = $"POINT({lon} {lat})";
+                        }
+                    }
+                }
             }
             else
             {
@@ -225,6 +357,78 @@ namespace ConverterTerritorioEmGeometriaMySql
                 string osm_id = listView1.SelectedItems[0].SubItems[1].Text;
                 txtOsmId.Text = osm_id;
             }
+        }
+
+        private async void btnAtualizarBancoDeDados_Click(object sender, EventArgs e)
+        {
+            btnAtualizarBancoDeDados.Enabled = false;
+            
+            string stringConnection = "Server=148.72.158.153;Uid=root;Pwd=Ds2311teste123#;SslMode=Required;AllowPublicKeyRetrieval=false;Pooling=True;MinimumPoolSize=1;maximumpoolsize=1;ConnectionLifeTime=60;Default Command Timeout=120;ServerRSAPublicKeyFile=mysql.pem;AllowUserVariables=True;";
+            await using MySqlConnection con = new (stringConnection);
+            await con.OpenAsync();
+
+            chkAutoCarregarRelacoes.Checked = true;
+
+            int i = 0;
+            if (listBox1.SelectedItems.Count > 0)
+            {
+                i = listBox1.SelectedIndices[0];
+                btnObterRelacoes_Click(sender, e);
+            }
+
+            for (; i < listBox1.Items.Count; i++)
+            {
+                listBox1.SelectedItem = listBox1.Items[i];
+
+                string uf = txtUF.Text;
+                string mun = listBox1.Text[3..];
+
+                await Task.Run(async () => {
+                    while (!btnObterRelacoes.Enabled)
+                    {
+                        await Task.Delay(10);
+                    }
+                });
+
+                btnObterGeometria_Click(sender, e);
+
+                await Task.Run(async () => {
+                    while (!btnObterGeometria.Enabled)
+                    {
+                        await Task.Delay(10);
+                    }
+                });
+
+                var com = con.CreateCommand();
+                com.CommandText =
+                    @"INSERT INTO `sandbox_v1_ds_consulta_dados`.`mapa`
+                    (
+                    `osm_id`,
+                    `tipo`,
+                    `uf`,
+                    `codigo_municipio`,
+                    `municipio`,
+                    `latitude`,
+                    `longitude`,
+                    `geometria`)
+                VALUES
+                    (
+                    " + txtOsmId.Text + @",
+                    'MUNICIPIO',
+                    '" + uf + @"',
+                    NULL,
+                    '" + mun + @"',
+                    " + lat + @",
+                    " + lon + @",
+                    ST_GeomFromText('" + geometria_robo + @"')
+                );";
+
+                int afetados = await com.ExecuteNonQueryAsync();
+
+                // await Task.Delay(1000);
+            }
+
+            btnAtualizarBancoDeDados.Enabled = true;
         }
     }
 }

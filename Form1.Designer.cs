@@ -32,7 +32,7 @@
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.btnCarregarMunicipios = new System.Windows.Forms.Button();
             this.btnObterRelacoes = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.txtGeometria = new System.Windows.Forms.TextBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader11 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
@@ -53,6 +53,7 @@
             this.txtUF = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.txtEstado = new System.Windows.Forms.TextBox();
+            this.btnAtualizarBancoDeDados = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnObterGeometria
@@ -63,7 +64,7 @@
             this.btnObterGeometria.TabIndex = 0;
             this.btnObterGeometria.Text = "Obter Geometria";
             this.btnObterGeometria.UseVisualStyleBackColor = true;
-            this.btnObterGeometria.Click += new System.EventHandler(this.btnObterTerritorio_Click);
+            this.btnObterGeometria.Click += new System.EventHandler(this.btnObterGeometria_Click);
             // 
             // listBox1
             // 
@@ -73,7 +74,7 @@
             this.listBox1.ItemHeight = 15;
             this.listBox1.Location = new System.Drawing.Point(12, 12);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(279, 559);
+            this.listBox1.Size = new System.Drawing.Size(279, 634);
             this.listBox1.TabIndex = 1;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -97,16 +98,16 @@
             this.btnObterRelacoes.UseVisualStyleBackColor = true;
             this.btnObterRelacoes.Click += new System.EventHandler(this.btnObterRelacoes_Click);
             // 
-            // textBox2
+            // txtGeometria
             // 
-            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.txtGeometria.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox2.Location = new System.Drawing.Point(307, 437);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(926, 143);
-            this.textBox2.TabIndex = 5;
+            this.txtGeometria.Location = new System.Drawing.Point(307, 437);
+            this.txtGeometria.Multiline = true;
+            this.txtGeometria.Name = "txtGeometria";
+            this.txtGeometria.Size = new System.Drawing.Size(937, 233);
+            this.txtGeometria.TabIndex = 5;
             // 
             // listView1
             // 
@@ -128,7 +129,7 @@
             this.listView1.Location = new System.Drawing.Point(307, 70);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(926, 332);
+            this.listView1.Size = new System.Drawing.Size(937, 332);
             this.listView1.TabIndex = 6;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -190,7 +191,7 @@
             // 
             // btnAbrirMapa
             // 
-            this.btnAbrirMapa.Location = new System.Drawing.Point(849, 40);
+            this.btnAbrirMapa.Location = new System.Drawing.Point(735, 40);
             this.btnAbrirMapa.Name = "btnAbrirMapa";
             this.btnAbrirMapa.Size = new System.Drawing.Size(156, 23);
             this.btnAbrirMapa.TabIndex = 8;
@@ -200,7 +201,7 @@
             // 
             // txtOsmId
             // 
-            this.txtOsmId.Location = new System.Drawing.Point(700, 408);
+            this.txtOsmId.Location = new System.Drawing.Point(642, 408);
             this.txtOsmId.Name = "txtOsmId";
             this.txtOsmId.ReadOnly = true;
             this.txtOsmId.Size = new System.Drawing.Size(113, 23);
@@ -211,7 +212,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(642, 411);
+            this.label1.Location = new System.Drawing.Point(584, 411);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(52, 15);
             this.label1.TabIndex = 10;
@@ -220,7 +221,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(867, 411);
+            this.label2.Location = new System.Drawing.Point(781, 411);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(24, 15);
             this.label2.TabIndex = 12;
@@ -228,7 +229,7 @@
             // 
             // txtUF
             // 
-            this.txtUF.Location = new System.Drawing.Point(897, 408);
+            this.txtUF.Location = new System.Drawing.Point(811, 408);
             this.txtUF.Name = "txtUF";
             this.txtUF.ReadOnly = true;
             this.txtUF.Size = new System.Drawing.Size(53, 23);
@@ -238,7 +239,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(960, 411);
+            this.label3.Location = new System.Drawing.Point(874, 411);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(45, 15);
             this.label3.TabIndex = 14;
@@ -246,18 +247,30 @@
             // 
             // txtEstado
             // 
-            this.txtEstado.Location = new System.Drawing.Point(1011, 408);
+            this.txtEstado.Location = new System.Drawing.Point(925, 408);
             this.txtEstado.Name = "txtEstado";
             this.txtEstado.ReadOnly = true;
             this.txtEstado.Size = new System.Drawing.Size(125, 23);
             this.txtEstado.TabIndex = 13;
             this.txtEstado.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // btnAtualizarBancoDeDados
+            // 
+            this.btnAtualizarBancoDeDados.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAtualizarBancoDeDados.Location = new System.Drawing.Point(1048, 40);
+            this.btnAtualizarBancoDeDados.Name = "btnAtualizarBancoDeDados";
+            this.btnAtualizarBancoDeDados.Size = new System.Drawing.Size(196, 23);
+            this.btnAtualizarBancoDeDados.TabIndex = 15;
+            this.btnAtualizarBancoDeDados.Text = "Atualizar Banco de Dados";
+            this.btnAtualizarBancoDeDados.UseVisualStyleBackColor = true;
+            this.btnAtualizarBancoDeDados.Click += new System.EventHandler(this.btnAtualizarBancoDeDados_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1245, 606);
+            this.ClientSize = new System.Drawing.Size(1256, 696);
+            this.Controls.Add(this.btnAtualizarBancoDeDados);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.txtEstado);
             this.Controls.Add(this.label2);
@@ -267,7 +280,7 @@
             this.Controls.Add(this.btnAbrirMapa);
             this.Controls.Add(this.chkAutoCarregarRelacoes);
             this.Controls.Add(this.listView1);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.txtGeometria);
             this.Controls.Add(this.btnObterRelacoes);
             this.Controls.Add(this.btnCarregarMunicipios);
             this.Controls.Add(this.listBox1);
@@ -285,7 +298,7 @@
         private ListBox listBox1;
         private Button btnCarregarMunicipios;
         private Button btnObterRelacoes;
-        private TextBox textBox2;
+        private TextBox txtGeometria;
         private ListView listView1;
         private ColumnHeader columnHeader11;
         private ColumnHeader columnHeader1;
@@ -306,5 +319,6 @@
         private TextBox txtUF;
         private Label label3;
         private TextBox txtEstado;
+        private Button btnAtualizarBancoDeDados;
     }
 }
