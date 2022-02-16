@@ -193,6 +193,10 @@ namespace ConverterTerritorioEmGeometriaMySql
                 sb = sb.Remove(sb.Length - 1, 1);
                 sb.Append(')');
             }
+            else if (lista.geojson.type == "MultiLineString")
+            {
+
+            }
             else
                 throw new NotImplementedException(lista.geojson.type);
 
@@ -214,7 +218,7 @@ namespace ConverterTerritorioEmGeometriaMySql
 
             using HttpClient client = new();
             client.DefaultRequestHeaders.Add("X_Auth_Cpf", "02857455143");
-            client.DefaultRequestHeaders.Add("X_Auth_Token", "b88575b9cfcc94888696c739a8a37d53");
+            client.DefaultRequestHeaders.Add("X_Auth_Token", "122a8c0e5b18d7facac8de656c33a7c5");
 
             var stream = await client.GetStreamAsync(endpoint);
             var lista = await JsonSerializer.DeserializeAsync<List<Parametro>>(stream);

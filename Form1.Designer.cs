@@ -203,7 +203,6 @@
             // 
             this.txtOsmId.Location = new System.Drawing.Point(642, 408);
             this.txtOsmId.Name = "txtOsmId";
-            this.txtOsmId.ReadOnly = true;
             this.txtOsmId.Size = new System.Drawing.Size(113, 23);
             this.txtOsmId.TabIndex = 9;
             this.txtOsmId.Text = "0";
